@@ -148,7 +148,9 @@ for is=10:10
     subplot(1,2,2);db_imagesc([squeeze(data3d(:,is,61:120)),squeeze(data3db(:,is,61:120)),squeeze(data3ddb(:,is,61:120)),squeeze(data3db(:,is,61:120))-squeeze(data3ddb(:,is,61:120))]);title('Common shot gather (source 2)');
 end
 
-save db_drr.mat data3d data3db data3ddb
+save db_drr.mat data3d data3db data3ddb delta0
+
+
 
 
 %% plot 3D comparison
