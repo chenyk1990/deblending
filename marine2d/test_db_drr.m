@@ -6,10 +6,10 @@ close all; clc;clear;
 % requiring the DRR package
 % https://github.com/chenyk1990/MATdrr
 addpath(genpath('~/MATdrr'));
-addpath(genpath('../subroutines/matfun'));
+addpath(genpath('../subroutines'));
 
 %% please download data from https://drive.google.com/file/d/1ge0Mn_SB4LUsVgOBvATh0iISwGQahKh4/view?usp=sharing
-load db_fieldsr.mat
+load yc_fieldsr.mat
 %% in this dataset
 %there are two sources data3d(:,:,1:60) and data3d(:,:,61:120)
 %each source contains 120 shots
@@ -20,8 +20,8 @@ d1=data3d(:,:,1);
 d2=data3d(:,:,61);
 
 figure;
-subplot(1,2,1);db_imagesc(d1);colormap(seis);
-subplot(1,2,2);db_imagesc(d2);colormap(seis);
+subplot(1,2,1);db_imagesc(d1);
+subplot(1,2,2);db_imagesc(d2);
 
 h1=1:120;
 h2=1:120;
@@ -63,8 +63,8 @@ d1b=d1+db_dither(d2,del);
 d2b=d2+db_dither(d1,-del);
 
 figure;
-subplot(1,2,1);db_imagesc(d1b);colormap(seis);
-subplot(1,2,2);db_imagesc(d2b);colormap(seis);
+subplot(1,2,1);db_imagesc(d1b);
+subplot(1,2,2);db_imagesc(d2b);
 
 %% blending for all receivers
 data3db=zeros(size(data3d));
@@ -119,8 +119,8 @@ for ir=1:60
         %         D2= seislet_denoise_2d(D2u,dip2,'ps',3,0.1,2,3);
         D1u=D1u.*mask1;
         D2u=D2u.*mask2;
-        D1=fxydmssa_win(D1u,0,80,0.004,2,4,0,100,20,1,0.5,0.5,0.5);
-        D2=fxydmssa_win(D2u,0,80,0.004,2,4,0,100,20,1,0.5,0.5,0.5);
+        D1=drr3d_win(D1u,0,80,0.004,2,4,0,100,20,1,0.5,0.5,0.5);
+        D2=drr3d_win(D2u,0,80,0.004,2,4,0,100,20,1,0.5,0.5,0.5);
         D1=D1.*mask1;
         D2=D2.*mask2;
         
@@ -129,9 +129,7 @@ for ir=1:60
         
         snr2(iter)=10*log10(sum(sum(d1.*d1))/sum(sum((d1-D1).*(d1-D1))));
         snr22(iter)=10*log10(sum(sum(d2.*d2))/sum(sum((d2-D2).*(d2-D2))));
-%         figure(9);
-%         subplot(1,2,1);db_imagesc(D1);colormap(seis);
-%         subplot(1,2,2);db_imagesc(D2);colormap(seis); 
+ 
     end
     data3ddb(:,:,ir)=D1;
     data3ddb(:,:,ir+60)=D2;
@@ -150,6 +148,6 @@ for is=10:10
     subplot(1,2,2);db_imagesc([squeeze(data3d(:,is,61:120)),squeeze(data3db(:,is,61:120)),squeeze(data3ddb(:,is,61:120)),squeeze(data3db(:,is,61:120))-squeeze(data3ddb(:,is,61:120))]);colormap(seis);title('Common shot gather (source 2)');
 end
 
-
+save db_drr.mat data3d data3db data3ddb
 
 
