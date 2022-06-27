@@ -1,5 +1,9 @@
-% Benchmark field data example using iterative damped rank-reduction method
+% Benchmark marine (2D) field data example for deblending
 %
+% This example was used in 
+% Chen, Y., S. Fomel, and R. Abma, 2022, Joint deblending and source time
+% inversion, Geophysics, doi: 10.1190/geo2022-0149.1.
+
 close all; clc;clear;
 
 %% Please change the directory path
@@ -50,7 +54,6 @@ subplot(1,2,1);imagesc(h1,t,d1b);
 subplot(1,2,2);imagesc(h2,t,d2b);
 
 %%
-% delta0=delta;
 rand('state',2021222324);
 [n1,n2]=size(d1);
 D1=zeros(nt,nx);
@@ -81,16 +84,14 @@ mask2=ones(size(d2));
 mask2=db_mutterv(mask2,61,42,4.1);
 
 bd=d1b;
-% delta0=delta;
 %% first receiver
-niters=[2,4,6,8,10];
 d1b=data3db(:,:,1);
 d2b=data3db(:,:,61);
 d1=data3d(:,:,1);
 d2=data3d(:,:,61);
 bd=d1b;
 
-
+%% correct source time
 delta0=delta;
 
 %% for all receivers
@@ -110,17 +111,16 @@ for ir=1:60
     D1=zeros(nt,nx);
     D2=zeros(nt,nx);
     for iter=1:niter
-        %         fprintf('\n Iter %d \n',iter);
         D1T=db_dither(D1,-delta0);
         D2T=db_dither(D2,delta0);
         D1u = D1 + 0.5*(d1b-(D1+D2T));    % updated model
         D2u = D2 + 0.5*(d2b-(D1T+D2));    % updated model
-        %         D1= seislet_denoise_2d(D1u,dip,'ps',3,0.1,2,3);
-        %         D2= seislet_denoise_2d(D2u,dip2,'ps',3,0.1,2,3);
-        D1u=D1u.*mask1;
-        D2u=D2u.*mask2;
-        D1=drr3d_win(D1u,0,80,0.004,2,4,0,100,20,1,0.5,0.5,0.5);
-        D2=drr3d_win(D2u,0,80,0.004,2,4,0,100,20,1,0.5,0.5,0.5);
+        %         D1= seislet_denoise_2d(D1u,dip,'ps',3,0.1,2,3); %This is to apply seislet-based sparse inversion
+        %         D2= seislet_denoise_2d(D2u,dip2,'ps',3,0.1,2,3);%This is to apply seislet-based sparse inversion
+        D1u=D1u.*mask1; %This is to apply a mask operator (muting) to remove noise before the first arrivals
+        D2u=D2u.*mask2; %This is to apply a mask operator (muting) to remove noise before the first arrivals
+        D1=drr3d_win(D1u,0,80,0.004,2,4,0,100,20,1,0.5,0.5,0.5);%This is to apply damped rank-reduction filter as a shaping operator to remove blending noise
+        D2=drr3d_win(D2u,0,80,0.004,2,4,0,100,20,1,0.5,0.5,0.5);%This is to apply damped rank-reduction filter as a shaping operator to remove blending noise
         D1=D1.*mask1;
         D2=D2.*mask2;
         
@@ -149,5 +149,51 @@ for is=10:10
 end
 
 save db_drr.mat data3d data3db data3ddb
+
+
+%% plot 3D comparison
+figure('units','normalized','Position',[0.2 0.4 0.4, 1],'color','w');
+subplot(2,2,1);db_mada3d(data3d(:,:,1:60));title('Unblended','Fontsize',12,'fontweight','normal');caxis([-0.1,0.1]);text(-30,0,'a)','color','k','Fontsize',16,'fontweight','bold','HorizontalAlignment','center');
+xlabel('Shot #','Fontsize',12,'fontweight','normal','Rotation',-10,'horizontalalignment','center','verticalalignment','middle');
+ylabel('Receiver #','Fontsize',12,'fontweight','normal','Rotation',20,'horizontalalignment','center','verticalalignment','middle');
+zlabel('Time (s)','Fontsize',12,'fontweight','normal');
+set(gca,'Linewidth',1.5,'Fontsize',12,'Fontweight','normal');
+zlim([0,5]);
+
+% subplot(3,4,2);db_mada3d(data3d(:,:,61:120));title('Source 2','Fontsize',12,'fontweight','normal');caxis([-0.1,0.1]);
+subplot(2,2,2);db_mada3d(data3db(:,:,1:60));title('Blended','Fontsize',12,'fontweight','normal');caxis([-0.1,0.1]);text(-30,0,'b)','color','k','Fontsize',16,'fontweight','bold','HorizontalAlignment','center');
+xlabel('Shot #','Fontsize',12,'fontweight','normal','Rotation',-10,'horizontalalignment','center','verticalalignment','middle');
+ylabel('Receiver #','Fontsize',12,'fontweight','normal','Rotation',20,'horizontalalignment','center','verticalalignment','middle');
+zlabel('Time (s)','Fontsize',12,'fontweight','normal');
+set(gca,'Linewidth',1.5,'Fontsize',12,'Fontweight','normal');
+% ax = gca;
+% ax.XAxisLocation='origin';
+zlim([0,5]);
+
+subplot(2,2,3);db_mada3d(data3ddb(:,:,1:60));title('Deblended (DRR)','Fontsize',12,'fontweight','normal');caxis([-0.1,0.1]);text(-30,0,'c)','color','k','Fontsize',16,'fontweight','bold','HorizontalAlignment','center');
+xlabel('Shot #','Fontsize',12,'fontweight','normal','Rotation',-10,'horizontalalignment','center','verticalalignment','middle');
+ylabel('Receiver #','Fontsize',12,'fontweight','normal','Rotation',20,'horizontalalignment','center','verticalalignment','middle');
+zlabel('Time (s)','Fontsize',12,'fontweight','normal');
+set(gca,'Linewidth',1.5,'Fontsize',12,'Fontweight','normal');
+zlim([0,5]);
+
+% subplot(3,4,2);db_mada3d(data3d(:,:,61:120));title('Source 2','Fontsize',12,'fontweight','normal');caxis([-0.1,0.1]);
+subplot(2,2,4);db_mada3d(data3db(:,:,1:60)-data3ddb(:,:,1:60));title('Noise (DRR)','Fontsize',12,'fontweight','normal');caxis([-0.1,0.1]);text(-30,0,'d)','color','k','Fontsize',16,'fontweight','bold','HorizontalAlignment','center');
+xlabel('Shot #','Fontsize',12,'fontweight','normal','Rotation',-10,'horizontalalignment','center','verticalalignment','middle');
+ylabel('Receiver #','Fontsize',12,'fontweight','normal','Rotation',20,'horizontalalignment','center','verticalalignment','middle');
+zlabel('Time (s)','Fontsize',12,'fontweight','normal');
+set(gca,'Linewidth',1.5,'Fontsize',12,'Fontweight','normal');
+% ax = gca;
+% ax.XAxisLocation='origin';
+zlim([0,5]);
+
+% Create textarrow
+annotation(gcf,'textarrow',[0.782986111111111 0.739583333333334],...
+[0.840478087649402 0.809933598937583],'String',{'Blending noise'},'linewidth',2,'fontweight','bold','color','r');
+
+% Create arrow
+annotation(gcf,'arrow',[0.784722222222222 0.795138888888889],...
+[0.837822045152722 0.817277556440903],'linewidth',2,'color','r');
+print(gcf,'-dpng','-r300','test_db_drr.png');
 
 
