@@ -138,14 +138,14 @@ end
 
 for ir=10:10
     figure(1)
-    subplot(1,2,1);db_imagesc([data3d(:,:,ir),data3db(:,:,ir),data3ddb(:,:,ir),data3db(:,:,ir)-data3ddb(:,:,ir)]);colormap(seis);title('Common receiver gather (source 1)');
-    subplot(1,2,2);db_imagesc([data3d(:,:,ir+60),data3db(:,:,ir+60),data3ddb(:,:,ir+60),data3db(:,:,ir+60)-data3ddb(:,:,ir+60)]);colormap(seis);title('Common receiver gather (source 2)');
+    subplot(1,2,1);db_imagesc([data3d(:,:,ir),data3db(:,:,ir),data3ddb(:,:,ir),data3db(:,:,ir)-data3ddb(:,:,ir)]);title('Common receiver gather (source 1)');
+    subplot(1,2,2);db_imagesc([data3d(:,:,ir+60),data3db(:,:,ir+60),data3ddb(:,:,ir+60),data3db(:,:,ir+60)-data3ddb(:,:,ir+60)]);title('Common receiver gather (source 2)');
 end
 
 for is=10:10
     figure(2)
-    subplot(1,2,1);db_imagesc([squeeze(data3d(:,is,1:60)),squeeze(data3db(:,is,1:60)),squeeze(data3ddb(:,is,1:60)),squeeze(data3db(:,is,1:60))-squeeze(data3ddb(:,is,1:60))]);colormap(seis);title('Common shot gather (source 1)');
-    subplot(1,2,2);db_imagesc([squeeze(data3d(:,is,61:120)),squeeze(data3db(:,is,61:120)),squeeze(data3ddb(:,is,61:120)),squeeze(data3db(:,is,61:120))-squeeze(data3ddb(:,is,61:120))]);colormap(seis);title('Common shot gather (source 2)');
+    subplot(1,2,1);db_imagesc([squeeze(data3d(:,is,1:60)),squeeze(data3db(:,is,1:60)),squeeze(data3ddb(:,is,1:60)),squeeze(data3db(:,is,1:60))-squeeze(data3ddb(:,is,1:60))]);title('Common shot gather (source 1)');
+    subplot(1,2,2);db_imagesc([squeeze(data3d(:,is,61:120)),squeeze(data3db(:,is,61:120)),squeeze(data3ddb(:,is,61:120)),squeeze(data3db(:,is,61:120))-squeeze(data3ddb(:,is,61:120))]);title('Common shot gather (source 2)');
 end
 
 save db_drr.mat data3d data3db data3ddb
